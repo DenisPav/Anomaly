@@ -1,0 +1,45 @@
+﻿<!doctype html>
+<html>
+<head>
+    <title>Test</title>
+    <meta charset="utf-8" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.5.1/css/bulma.min.css" rel="stylesheet" />
+</head>
+<body>
+    <main class="container">
+        <div class="columns">
+            <div class="column is-one-third is-offset-one-third">
+                <form action="#" method="post" id="form">
+                    <input id="token" type="hidden" name="token" />
+                    <div class="field">
+                        <label class="label" for="email">Email:</label>
+                        <input class="input" id="email" type="text" name="email" placeholder="email" />
+                    </div>
+                    <div class="field">
+                        <button class="button" type="submit">Login</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+    <script>
+        document.getElementById('form')
+            .addEventListener('submit', e => {
+                e.preventDefault();
+
+                var email = document.getElementById('email').value;
+
+                var socket = new WebSocket(`ws://localhost:5000?email=${email}`);
+                socket.onopen = e => console.log(e);
+                socket.onclose = e => console.log(e);
+                socket.onerror = e => console.log(e);
+                socket.onmessage = e => {
+                    document.getElementById('form').action = "/login";
+                    document.getElementById('token').value = e.data;
+
+                    document.getElementById('form').submit();
+                }
+            });
+    </script>
+</body>
+</html>
