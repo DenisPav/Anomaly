@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using SocketLogin.Database;
 using SocketLogin.Middleware;
 using System;
@@ -17,11 +18,13 @@ namespace SocketLogin.Controllers
     {
         private IDataProtector Protector { get; set; }
         private DatabaseContext Db { get; set; }
+        private IMemoryCache Cache { get; set; }
 
-        public HomeController(IDataProtectionProvider provider, DatabaseContext db)
+        public HomeController(IDataProtectionProvider provider, IMemoryCache cache, DatabaseContext db)
         {
             this.Protector = provider.CreateProtector("magic");
             this.Db = db;
+            this.Cache = cache;
         }
 
         [HttpGet]
@@ -32,36 +35,55 @@ namespace SocketLogin.Controllers
         public async Task<IActionResult> LoginToken(string token)
         {
             var unprotected = Protector.Unprotect(token).Split(',');
-            var email = unprotected[0];
-            var id = Guid.Parse(unprotected[1]);
+            var userId = int.Parse(unprotected[0]);
+            var uniqueToken = Guid.Parse(unprotected[1]);
 
-            var socket = WebSocketMiddleware.Sockets.FirstOrDefault(x => x.Email == email && x.Id == id).Socket;
-            var buff = new ArraySegment<byte>(Encoding.UTF8.GetBytes(token));
-            await socket.SendAsync(buff, System.Net.WebSockets.WebSocketMessageType.Text, true, CancellationToken.None);
-
-            return Ok(new
+            if (Cache.TryGetValue<int>(uniqueToken, out var cacheUserId) && userId == cacheUserId)
             {
-                Message = "Everything ok"
-            });
+                var socket = WebSocketMiddleware.Sockets.FirstOrDefault(x => x.Unique == uniqueToken).Socket;
+                var buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(token));
+                await socket.SendAsync(buffer, System.Net.WebSockets.WebSocketMessageType.Text, true, CancellationToken.None);
+
+                return Ok(new
+                {
+                    Message = "Everything ok"
+                });
+            }
+            else
+            {
+                return BadRequest(new
+                {
+                    Message = "Wrong Token"
+                });
+            }
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromForm]string token)
         {
             var unprotected = Protector.Unprotect(token).Split(',');
-            var email = unprotected[0];
-            var id = Guid.Parse(unprotected[1]);
+            var userId = int.Parse(unprotected[0]);
+            var uniqueToken = Guid.Parse(unprotected[1]);
 
-            var identity = new ClaimsIdentity(new[] {
-                new Claim(ClaimTypes.Name, id.ToString()),
-                new Claim(ClaimTypes.NameIdentifier, email)
-            }, "cookie");
+            if (Cache.TryGetValue<int>(uniqueToken, out var cacheUserId) && userId == cacheUserId)
+            {
+                var identity = new ClaimsIdentity(new[] {
+                    new Claim(ClaimTypes.Name, userId.ToString()),
+                }, "cookie");
 
-            var principal = new ClaimsPrincipal(identity);
+                var principal = new ClaimsPrincipal(identity);
 
-            await HttpContext.Authentication.SignInAsync("cookies", principal);
+                await HttpContext.Authentication.SignInAsync("cookies", principal);
 
-            return RedirectToAction(nameof(Protected));
+                return RedirectToAction(nameof(Protected));
+            }
+            else
+            {
+                return BadRequest(new
+                {
+                    Message = "Wrong token"
+                });
+            }
         }
 
         [HttpGet("protected", Name = nameof(Protected))]
