@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -17,8 +18,8 @@ namespace SocketLogin.Controllers
     public class HomeController : Controller
     {
         private IDataProtector Protector { get; set; }
-        private DatabaseContext Db { get; set; }
         private IMemoryCache Cache { get; set; }
+        private DatabaseContext Db { get; set; }
 
         public HomeController(IDataProtectionProvider provider, IMemoryCache cache, DatabaseContext db)
         {
@@ -69,11 +70,11 @@ namespace SocketLogin.Controllers
             {
                 var identity = new ClaimsIdentity(new[] {
                     new Claim(ClaimTypes.Name, userId.ToString()),
-                }, "cookie");
+                }, CookieAuthenticationDefaults.AuthenticationScheme);
 
                 var principal = new ClaimsPrincipal(identity);
 
-                await HttpContext.Authentication.SignInAsync("cookies", principal);
+                await HttpContext.Authentication.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
                 return RedirectToAction(nameof(Protected));
             }
