@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using System;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using SocketLogin.Database;
+using SocketLogin.Extensions;
 using SocketLogin.Middleware;
+using System;
 
 namespace SocketLogin
 {
@@ -19,24 +21,23 @@ namespace SocketLogin
 
         public void Configure(IApplicationBuilder app, DatabaseContext db)
         {
-            db.Users.AddRange(new Models.User
-            {
-                Email = "first@gmail.com"
-            });
-            db.SaveChanges();
+            db.EnsureCreated();
 
             app.UseDeveloperExceptionPage();
             app.UseWebSockets();
-            app.UseCookieAuthentication(new CookieAuthenticationOptions
-            {
-                AuthenticationScheme = "cookies",
-                AutomaticAuthenticate = true,
-                AutomaticChallenge = true,
-                ExpireTimeSpan = TimeSpan.FromHours(10)
-            });
+            app.UseCookieAuthentication(CookieAuthDefaults());
 
             app.UseMiddleware<WebSocketMiddleware>();
             app.UseMvc();
         }
+
+        private CookieAuthenticationOptions CookieAuthDefaults()
+            => new CookieAuthenticationOptions
+            {
+                AuthenticationScheme = CookieAuthenticationDefaults.AuthenticationScheme,
+                AutomaticAuthenticate = true,
+                AutomaticChallenge = true,
+                ExpireTimeSpan = TimeSpan.FromHours(10)
+            };
     }
 }
