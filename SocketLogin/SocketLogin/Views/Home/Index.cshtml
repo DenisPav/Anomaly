@@ -29,7 +29,7 @@
 
                 var email = document.getElementById('email').value;
 
-                var socket = new WebSocket(`ws://localhost:5000?email=${email}`);
+                var socket = new WebSocket(`ws://${window.location.host}?email=${email}`);
                 socket.onopen = e => console.log(e);
                 socket.onclose = e => console.log(e);
                 socket.onerror = e => console.log(e);
