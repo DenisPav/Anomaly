@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SocketLogin.Database;
 using SocketLogin.Extensions;
 using SocketLogin.Middleware;
+using SocketLogin.Services;
 using System;
 
 namespace SocketLogin
@@ -13,8 +15,11 @@ namespace SocketLogin
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            
             services.AddMemoryCache();
             services.AddDbContext<DatabaseContext>(opts => opts.UseInMemoryDatabase());
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddScoped<AuthService>();
             services.AddAuthorization(opts => opts.AddPolicy("testPolicy", builder => builder.RequireAuthenticatedUser()));
             services.AddMvc();
         }
