@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.AspNetCore.Http;
 using SocketLogin.Database;
+using SocketLogin.Services;
 using System;
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
@@ -13,8 +11,7 @@ namespace SocketLogin.Middleware
     public class WebSocketMiddleware
     {
         private RequestDelegate Next { get; set; }
-        private IMemoryCache Cache { get; set; }
-        private IDataProtector Protector { get; set; }
+        private AuthService AuthService { get; set; }
 
         public static ConcurrentBag<SocketWrapper> Sockets { get; set; } = new ConcurrentBag<SocketWrapper>();
 
@@ -24,38 +21,31 @@ namespace SocketLogin.Middleware
             public Guid Unique { get; set; }
             public WebSocket Socket { get; set; }
 
-            public static SocketWrapper Create(int id, WebSocket socket)
-                => new SocketWrapper { Socket = socket, Id = id, Unique = Guid.NewGuid() };
+            public static SocketWrapper Create(int id, Guid unique, WebSocket socket)
+                => new SocketWrapper { Socket = socket, Id = id, Unique = unique };
         }
 
-        public WebSocketMiddleware(RequestDelegate next, IMemoryCache cache, IDataProtectionProvider provider)
+        public WebSocketMiddleware(RequestDelegate next, AuthService authService)
         {
             this.Next = next;
-            this.Cache = cache;
-            this.Protector = provider.CreateProtector("magic");
+            this.AuthService = authService;
         }
 
         public async Task Invoke(HttpContext ctx, DatabaseContext db)
         {
             if (ctx.WebSockets.IsWebSocketRequest && ctx.Request.Query.TryGetValue("email", out var email))
             {
-                var user = await db.Users.FirstOrDefaultAsync(x => x.Email == email.ToString());
+                var result = await AuthService.CreateLink(email);
 
-                if (user != null)
-                {
-                    var socket = await ctx.WebSockets.AcceptWebSocketAsync();
+                var socket = await ctx.WebSockets.AcceptWebSocketAsync();
 
-                    var wrapper = SocketWrapper.Create(user.Id, socket);
-                    Sockets.Add(wrapper);
+                var wrapper = SocketWrapper.Create(result.UserId, result.Unique, socket);
+                Sockets.Add(wrapper);
 
-                    var data = Protector.Protect($"{wrapper.Id},{wrapper.Unique}");
-                    Cache.Set(wrapper.Unique, wrapper.Id, DateTimeOffset.Now.AddMinutes(2));
+                var url = $"{Program.URL}/login/{result.Protected}";
+                Console.WriteLine(url);
 
-                    var url = $"{Program.URL}/login/{data}";
-                    Console.WriteLine(url);
-
-                    while(wrapper.Socket.State == WebSocketState.Open) { await Task.Delay(5000); }
-                }
+                while (wrapper.Socket.State == WebSocketState.Open) { await Task.Delay(5000); }
             }
             else
             {
