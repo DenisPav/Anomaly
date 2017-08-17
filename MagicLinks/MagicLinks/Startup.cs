@@ -13,8 +13,17 @@ namespace MagicLinks
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDataProtection();
-            services.AddDbContext<DatabaseContext>(opts => opts.UseInMemoryDatabase());
+            services.AddDbContext<DatabaseContext>(opts => opts.UseInMemoryDatabase(nameof(MagicLinks)));
             services.AddAuthorization(opts => opts.AddPolicy("testPolicy", builder => builder.RequireAuthenticatedUser()));
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(opts =>
+                {
+                    opts.ExpireTimeSpan = TimeSpan.FromDays(10);
+                    opts.Events = new CookieAuthenticationEvents
+                    {
+                        OnRedirectToLogin = ctx => Task.CompletedTask
+                    };
+                });
             services.AddMemoryCache();
             services.AddMvcCore()
                 .AddJsonFormatters()
@@ -24,18 +33,8 @@ namespace MagicLinks
         public void Configure(IApplicationBuilder app, DatabaseContext context)
         {
             context.CreateUsers().Wait();
-            app.UseCookieAuthentication(new CookieAuthenticationOptions
-            {
-                AuthenticationScheme = "AuthScheme",
-                AutomaticAuthenticate = true,
-                AutomaticChallenge = true,
-                ExpireTimeSpan = TimeSpan.FromDays(10),
-                Events = new CookieAuthenticationEvents
-                {
-                    OnRedirectToLogin = ctx => Task.CompletedTask
-                }
-            });
 
+            app.UseAuthentication();
             app.UseDeveloperExceptionPage();
             app.UseMvc();
         }

@@ -17,9 +17,11 @@ namespace SocketLogin
         {
             
             services.AddMemoryCache();
-            services.AddDbContext<DatabaseContext>(opts => opts.UseInMemoryDatabase());
+            services.AddDbContext<DatabaseContext>(opts => opts.UseInMemoryDatabase(nameof(SocketLogin)));
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<AuthService>();
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(CookieAuthDefaults());
             services.AddAuthorization(opts => opts.AddPolicy("testPolicy", builder => builder.RequireAuthenticatedUser()));
             services.AddMvc();
         }
@@ -30,19 +32,16 @@ namespace SocketLogin
 
             app.UseDeveloperExceptionPage();
             app.UseWebSockets();
-            app.UseCookieAuthentication(CookieAuthDefaults());
+            app.UseAuthentication();
 
             app.UseMiddleware<WebSocketMiddleware>();
             app.UseMvc();
         }
 
-        private CookieAuthenticationOptions CookieAuthDefaults()
-            => new CookieAuthenticationOptions
+        private Action<CookieAuthenticationOptions> CookieAuthDefaults()
+            => opts =>
             {
-                AuthenticationScheme = CookieAuthenticationDefaults.AuthenticationScheme,
-                AutomaticAuthenticate = true,
-                AutomaticChallenge = true,
-                ExpireTimeSpan = TimeSpan.FromHours(10)
+                opts.ExpireTimeSpan = TimeSpan.FromHours(10);
             };
     }
 }
