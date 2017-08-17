@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 
 namespace MagicLinks
@@ -8,15 +9,12 @@ namespace MagicLinks
         public const string URL = "http://localhost:5000/";
 
         public static void Main(string[] args)
-        {
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseUrls(URL)
-                .UseStartup<Startup>()
-                .Build();
+            => BuildWebHost(args).Run();
 
-            host.Run();
-        }
+        public static IWebHost BuildWebHost(string[] args) =>
+            WebHost.CreateDefaultBuilder(args)
+                .UseStartup<Startup>()
+                .UseUrls(URL)
+                .Build();
     }
 }

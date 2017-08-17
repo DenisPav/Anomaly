@@ -8,6 +8,8 @@ using Microsoft.Extensions.Caching.Memory;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace MagicLinks.Controllers
 {
@@ -74,7 +76,7 @@ namespace MagicLinks.Controllers
                 var identity = new ClaimsIdentity(claims, "cookies");
                 var principal = new ClaimsPrincipal(identity);
 
-                await HttpContext.Authentication.SignInAsync("AuthScheme", principal);
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
                 return Ok(new
                 {
