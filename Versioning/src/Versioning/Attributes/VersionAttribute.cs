@@ -19,10 +19,12 @@ namespace Versioning.Attributes
     public class HeaderConstraint : IActionConstraint
     {
         public IEnumerable<string> Versions { get; private set; }
+        public Lazy<IEnumerable<string>> VersionHeaderValues { get; private set; }
 
         public HeaderConstraint(params string[] versions)
         {
-            Versions = versions.Select(x => $"application/v{x}+json");
+            Versions = versions;
+            VersionHeaderValues = new Lazy<IEnumerable<string>>(() => Versions.Select(x => $"application/v{x}+json"));
         }
         public int Order => 1;
 
@@ -30,7 +32,7 @@ namespace Versioning.Attributes
         {
             if (context.RouteContext.HttpContext.Request.Headers.TryGetValue("Accept", out var val))
             {
-                return Versions.Any(x => x == val);
+                return VersionHeaderValues.Value.Any(x => x == val);
             }
             return false;
         }

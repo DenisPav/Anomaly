@@ -14,16 +14,17 @@ namespace Versioning
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc(opts => {
-                opts.Conventions.Add(new HeaderVersionConvention());
+            services.AddMvc(opts =>
+            {
                 opts.Conventions.Add(new HeaderControllerVersionConvention());
+                opts.Conventions.Add(new HeaderVersionConvention());
             });
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-           app.UseDeveloperExceptionPage();
-           app.UseMvc();
+            app.UseDeveloperExceptionPage();
+            app.UseMvc();
         }
     }
 }

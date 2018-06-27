@@ -4,6 +4,7 @@ using Versioning.Attributes;
 namespace Versioning.Controllers
 {
     [Route("[controller]")]
+    [Version("3")]
     public class TestController : Controller
     {
         [HttpGet()]

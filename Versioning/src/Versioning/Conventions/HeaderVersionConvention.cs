@@ -16,11 +16,18 @@ namespace Versioning.Conventions
 
             foreach (var selector in action.Selectors)
             {
-                selector.ActionConstraints.Add(new HeaderConstraint(versions.ToArray()));
+                var headerConstraints = selector.ActionConstraints.OfType<HeaderConstraint>();
+
+                if (!headerConstraints.Any())
+                    selector.ActionConstraints.Add(new HeaderConstraint(versions.ToArray()));
+                else
+                {
+                    var constraint = headerConstraints.FirstOrDefault();
+                    selector.ActionConstraints.Remove(constraint);
+                    selector.ActionConstraints.Add(new HeaderConstraint(constraint.Versions.Concat(versions).ToArray()));
+                }
             }
         }
-
-        
     }
 
     public class HeaderControllerVersionConvention : IControllerModelConvention
@@ -33,9 +40,12 @@ namespace Versioning.Conventions
             if (!versions.Any())
                 return;
 
-            foreach (var selector in controller.Selectors)
+            foreach (var action in controller.Actions)
             {
-                selector.ActionConstraints.Add(new HeaderConstraint(versions.ToArray()));
+                foreach (var selector in action.Selectors)
+                {
+                    selector.ActionConstraints.Add(new HeaderConstraint(versions.ToArray()));
+                }
             }
         }
     }
