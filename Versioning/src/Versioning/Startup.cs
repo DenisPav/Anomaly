@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Versioning.Conventions;
 
@@ -17,7 +12,7 @@ namespace Versioning
             services.AddMvc(opts =>
             {
                 opts.Conventions.Add(new HeaderControllerVersionConvention());
-                opts.Conventions.Add(new HeaderVersionConvention());
+                opts.Conventions.Add(new HeaderActionVersionConvention());
             });
         }
 
