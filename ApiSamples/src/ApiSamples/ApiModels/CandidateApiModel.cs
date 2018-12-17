@@ -5,7 +5,7 @@ namespace ApiSamples.ApiModels
 {
     public class CandidateApiModel
     {
-        public int Id { get; set; }
+        public int? Id { get; set; }
         public string Name { get; set; }
         public string Surname { get; set; }
 

@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using ApiSamples.Config;
 using ApiSamples.Database;
+using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,6 +19,9 @@ namespace ApiSamples
                 .AddJsonOptions(opts => {
                     opts.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
                 });
+
+            services.AddSingleton(AutoMapperConfig.GetConfiguration() as IConfigurationProvider);
+            services.AddScoped(s => new Mapper(s.GetRequiredService<IConfigurationProvider>(), s.GetRequiredService) as IMapper);
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
