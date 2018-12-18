@@ -19,6 +19,13 @@ namespace ApiSamples.Config
 
                     opts.CreateMap<CreateCandidateApiModel, Candidate>();
                     opts.CreateMap<UpdateCandidateApiModel, Candidate>();
+
+                    opts.CreateMap<Match, MatchApiModel>()
+                        .ForAllMembers(x => x.ExplicitExpansion());
+                    opts.CreateMap<Company, CompanyApiModel>()
+                        .ForAllMembers(x => x.ExplicitExpansion());
+                    opts.CreateMap<Position, PositionApiModel>()
+                        .ForAllMembers(x => x.ExplicitExpansion());
                 }
             );
         }

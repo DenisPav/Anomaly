@@ -9,6 +9,6 @@ namespace ApiSamples.ApiModels
         public string Name { get; set; }
         public string Surname { get; set; }
 
-        public IEnumerable<Match> Matches { get; set; }
+        public IEnumerable<MatchApiModel> Matches { get; set; }
     }
 }

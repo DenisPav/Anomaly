@@ -4,9 +4,13 @@ using ApiSamples.Database;
 using ApiSamples.Domain;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.Annotations;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -30,77 +34,81 @@ namespace ApiSamples.Controllers.Standard
         }
 
         [HttpGet]
-        public async Task<IActionResult> List()
+        [SwaggerResponse(StatusCodes.Status200OK, "Fetches candidates", typeof(IEnumerable<CandidateApiModel>))]
+        public async Task<IActionResult> List([FromQuery, Required]string fields)
         {
-            var queryFields = Request.Query["fields"];
+            var queryFields = fields.Split(',')
+                .ToArray();
 
-            var candidates = await Db.Set<Candidate>().ProjectTo<CandidateApiModel>(ConfigurationProvider, null, queryFields[0].Split(',').ToArray()).ToListAsync();
+            var candidates = await Db.Set<Candidate>().ProjectTo<CandidateApiModel>(ConfigurationProvider, null, queryFields).ToListAsync();
 
             return Ok(candidates);
         }
 
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> Single(int id)
+        [SwaggerResponse(StatusCodes.Status200OK, "Fetches candidate by id", typeof(CandidateApiModel))]
+        public async Task<IActionResult> Single(int id, [FromQuery, Required]string fields)
         {
-            var queryFields = Request.Query["fields"];
+            var queryFields = fields.Split(',')
+                .ToArray();
 
             var candidate = await Db.Set<Candidate>()
                 .Where(x => x.Id == id)
-                .ProjectTo<CandidateApiModel>(ConfigurationProvider, null, queryFields[0].Split(',').ToArray())
+                .ProjectTo<CandidateApiModel>(ConfigurationProvider, null, queryFields)
                 .FirstOrDefaultAsync();
 
             return Ok(candidate);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create(CreateCandidateApiModel model)
-        {
-            var mapped = Mapper.Map<Candidate>(model);
+        //[HttpPost]
+        //public async Task<IActionResult> Create(CreateCandidateApiModel model)
+        //{
+        //    var mapped = Mapper.Map<Candidate>(model);
 
-            try
-            {
-                await Db.Set<Candidate>()
-                    .AddAsync(mapped);
-                await Db.SaveChangesAsync();
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("Oh no :(");
-            }
+        //    try
+        //    {
+        //        await Db.Set<Candidate>()
+        //            .AddAsync(mapped);
+        //        await Db.SaveChangesAsync();
+        //    }
+        //    catch (Exception)
+        //    {
+        //        Console.WriteLine("Oh no :(");
+        //    }
 
-            return Ok(Mapper.Map<CandidateApiModel>(mapped));
-        }
+        //    return Ok(Mapper.Map<CandidateApiModel>(mapped));
+        //}
 
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> Update(int id, UpdateCandidateApiModel model)
-        {
-            var candidate = await Db.Set<Candidate>()
-                .FirstOrDefaultAsync(x => x.Id == id);
+        //[HttpPut("{id:int}")]
+        //public async Task<IActionResult> Update(int id, UpdateCandidateApiModel model)
+        //{
+        //    var candidate = await Db.Set<Candidate>()
+        //        .FirstOrDefaultAsync(x => x.Id == id);
 
-            if (candidate == null)
-            {
-                return NotFound();
-            }
+        //    if (candidate == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            Mapper.Map(model, candidate);
+        //    Mapper.Map(model, candidate);
 
-            try
-            {
+        //    try
+        //    {
 
-                await Db.SaveChangesAsync();
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("Oh no :(");
-            }
+        //        await Db.SaveChangesAsync();
+        //    }
+        //    catch (Exception)
+        //    {
+        //        Console.WriteLine("Oh no :(");
+        //    }
 
-            return Ok(Mapper.Map<CandidateApiModel>(candidate));
-        }
+        //    return Ok(Mapper.Map<CandidateApiModel>(candidate));
+        //}
 
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            throw new NotImplementedException("Same as other...");
-        }
+        //[HttpDelete("{id:int}")]
+        //public async Task<IActionResult> Delete(int id)
+        //{
+        //    throw new NotImplementedException("Same as other...");
+        //}
     }
 }
