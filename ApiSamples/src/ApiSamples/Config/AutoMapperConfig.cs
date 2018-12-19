@@ -29,5 +29,24 @@ namespace ApiSamples.Config
                 }
             );
         }
+
+        //public static MapperConfiguration GetGraphQLConfiguration()
+        //{
+        //    return new MapperConfiguration(
+        //        opts =>
+        //        {
+        //            opts.CreateMap<Candidate, CandidateApiModel>();
+
+        //            opts.CreateMap<CandidateApiModel, Candidate>();
+
+        //            opts.CreateMap<CreateCandidateApiModel, Candidate>();
+        //            opts.CreateMap<UpdateCandidateApiModel, Candidate>();
+
+        //            opts.CreateMap<Match, MatchApiModel>();
+        //            opts.CreateMap<Company, CompanyApiModel>();
+        //            opts.CreateMap<Position, PositionApiModel>();
+        //        }
+        //    );
+        //}
     }
 }
