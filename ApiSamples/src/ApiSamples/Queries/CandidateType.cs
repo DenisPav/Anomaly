@@ -1,15 +1,5 @@
 ﻿using ApiSamples.ApiModels;
-using ApiSamples.Database;
-using ApiSamples.Domain;
-using AutoMapper;
-using AutoMapper.QueryableExtensions;
-using HotChocolate.Language;
-using HotChocolate.Resolvers;
 using HotChocolate.Types;
-using Microsoft.EntityFrameworkCore;
-using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ApiSamples.Queries
 {

@@ -8,16 +8,26 @@ using HotChocolate.AspNetCore.Playground;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ApiSamples
 {
     public class Startup
     {
+        readonly IConfiguration Configuration;
+
+        public Startup(
+            IConfiguration configuration
+        )
+        {
+            Configuration = configuration;
+        }
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<DatabaseContext>(
-                opts => opts.UseSqlServer("")
+                opts => opts.UseSqlServer(Configuration["Db"])
             );
             services.AddMvc()
                 .AddJsonOptions(opts =>
@@ -25,8 +35,8 @@ namespace ApiSamples
                     opts.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
                 });
 
-            services.AddSingleton(AutoMapperConfig.GetConfiguration() as IConfigurationProvider);
-            services.AddScoped(s => new Mapper(s.GetRequiredService<IConfigurationProvider>(), s.GetRequiredService) as IMapper);
+            services.AddSingleton(AutoMapperConfig.GetConfiguration() as AutoMapper.IConfigurationProvider);
+            services.AddScoped(s => new Mapper(s.GetRequiredService<AutoMapper.IConfigurationProvider>(), s.GetRequiredService) as IMapper);
 
             services.AddSwaggerGen(opts => opts.SwaggerDoc("api-sample", new Swashbuckle.AspNetCore.Swagger.Info
             {
