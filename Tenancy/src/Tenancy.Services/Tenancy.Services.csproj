@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Tenancy.Db\Tenancy.Db.csproj" />
+    <ProjectReference Include="..\Tenancy.Models\Tenancy.Models.csproj" />
+    <ProjectReference Include="..\Tenancy.Common\Tenancy.Common.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+</Project>
