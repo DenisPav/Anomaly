@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Sieve.Services;
 
 namespace ApiSamples
 {
@@ -45,6 +46,7 @@ namespace ApiSamples
             }));
 
             services.AddScoped<QueryType>();
+            services.AddScoped<ISieveProcessor, SieveProcessor>();
 
             services.AddGraphQL(sp => Schema.Create(opts => {
                 opts.RegisterServiceProvider(sp);

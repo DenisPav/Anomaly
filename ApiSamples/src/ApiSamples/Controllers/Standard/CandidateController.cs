@@ -7,8 +7,9 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Sieve.Models;
+using Sieve.Services;
 using Swashbuckle.AspNetCore.Annotations;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -21,16 +22,19 @@ namespace ApiSamples.Controllers.Standard
         readonly DatabaseContext Db;
         readonly IConfigurationProvider ConfigurationProvider;
         readonly IMapper Mapper;
+        readonly ISieveProcessor SieveProcessor;
 
         public CandidateController(
             DatabaseContext db,
             IConfigurationProvider configurationProvider,
-            IMapper mapper
+            IMapper mapper,
+            ISieveProcessor sieveProcessor
         )
         {
             Db = db;
             ConfigurationProvider = configurationProvider;
             Mapper = mapper;
+            SieveProcessor = sieveProcessor;
         }
 
         [HttpGet]
@@ -58,6 +62,16 @@ namespace ApiSamples.Controllers.Standard
                 .FirstOrDefaultAsync();
 
             return Ok(candidate);
+        }
+
+        [HttpGet("filtered")]
+        public async Task<IActionResult> Filtered([FromQuery]SieveModel model)
+        {
+            var set = Db.Set<Candidate>();
+            var filtered = await SieveProcessor.Apply(model, set)
+                .ToListAsync(); ;
+
+            return Ok(filtered);
         }
 
         //[HttpPost]
