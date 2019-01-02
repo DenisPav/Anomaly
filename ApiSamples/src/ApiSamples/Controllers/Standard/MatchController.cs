@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sieve.Models;
 using Sieve.Services;
+using Spectre.Query;
 using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Collections.Generic;
@@ -23,16 +24,19 @@ namespace ApiSamples.Controllers.Standard
         readonly DatabaseContext Db;
         readonly IConfigurationProvider ConfigurationProvider;
         readonly ISieveProcessor SieveProcessor;
+        readonly IQueryProvider<DatabaseContext> QueryProvider;
 
         public MatchController(
             DatabaseContext db,
             IConfigurationProvider configurationProvider,
-            ISieveProcessor sieveProcessor
+            ISieveProcessor sieveProcessor,
+            IQueryProvider<DatabaseContext> queryProvider
         )
         {
             Db = db;
             ConfigurationProvider = configurationProvider;
             SieveProcessor = sieveProcessor;
+            QueryProvider = queryProvider;
         }
 
         [HttpGet]
@@ -72,6 +76,15 @@ namespace ApiSamples.Controllers.Standard
                 .ToListAsync(); ;
 
             return Ok(filtered);
+        }
+
+        [HttpGet("queried")]
+        public async Task<IActionResult> Queried([FromQuery]string q)
+        {
+            var candidates = await QueryProvider.Query<Match>(Db, q)
+                .ToListAsync();
+
+            return Ok(candidates);
         }
     }
 }

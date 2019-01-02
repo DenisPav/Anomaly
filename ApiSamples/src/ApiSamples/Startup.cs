@@ -1,5 +1,6 @@
 ﻿using ApiSamples.Config;
 using ApiSamples.Database;
+using ApiSamples.Domain;
 using ApiSamples.Queries;
 using ApiSamples.Services;
 using AutoMapper;
@@ -48,8 +49,37 @@ namespace ApiSamples
 
             services.AddScoped<QueryType>();
             services.AddScoped<ISieveProcessor, CustomSieveProcessor>();
+            services.AddQueryProvider<DatabaseContext>(opts =>
+            {
+                opts.Configure<Candidate>(candidate =>
+                {
+                    candidate.Map("Id", mapping => mapping.Id);
+                    candidate.Map("Name", mapping => mapping.Name);
+                    candidate.Map("Surname", mapping => mapping.Surname);
+                });
 
-            services.AddGraphQL(sp => Schema.Create(opts => {
+                opts.Configure<Match>(match =>
+                {
+                    match.Map("Id", mapping => mapping.Id);
+                });
+
+                opts.Configure<Position>(position =>
+                {
+                    position.Map("Id", mapping => mapping.Id);
+                    position.Map("Name", mapping => mapping.Name);
+                    position.Map("Openings", mapping => mapping.Openings);
+                });
+
+                opts.Configure<Company>(company =>
+                {
+                    company.Map("Id", mapping => mapping.Id);
+                    company.Map("Name", mapping => mapping.Name);
+                    company.Map("Position", mapping => mapping.Positions, position => position.Name);
+                });
+            });
+
+            services.AddGraphQL(sp => Schema.Create(opts =>
+            {
                 opts.RegisterServiceProvider(sp);
 
                 opts.RegisterQueryType<QueryType>();

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sieve.Models;
 using Sieve.Services;
+using Spectre.Query;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -23,18 +24,21 @@ namespace ApiSamples.Controllers.Standard
         readonly IConfigurationProvider ConfigurationProvider;
         readonly IMapper Mapper;
         readonly ISieveProcessor SieveProcessor;
+        readonly IQueryProvider<DatabaseContext> QueryProvider;
 
         public CandidateController(
             DatabaseContext db,
             IConfigurationProvider configurationProvider,
             IMapper mapper,
-            ISieveProcessor sieveProcessor
+            ISieveProcessor sieveProcessor,
+            IQueryProvider<DatabaseContext> queryProvider
         )
         {
             Db = db;
             ConfigurationProvider = configurationProvider;
             Mapper = mapper;
             SieveProcessor = sieveProcessor;
+            QueryProvider = queryProvider;
         }
 
         [HttpGet]
@@ -72,6 +76,15 @@ namespace ApiSamples.Controllers.Standard
                 .ToListAsync(); ;
 
             return Ok(filtered);
+        }
+
+        [HttpGet("queried")]
+        public async Task<IActionResult> Queried([FromQuery]string q)
+        {
+            var candidates = await QueryProvider.Query<Candidate>(Db, q)
+                .ToListAsync();
+
+            return Ok(candidates);
         }
 
         //[HttpPost]
