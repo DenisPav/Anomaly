@@ -1,6 +1,7 @@
 ﻿using ApiSamples.Config;
 using ApiSamples.Database;
 using ApiSamples.Queries;
+using ApiSamples.Services;
 using AutoMapper;
 using HotChocolate;
 using HotChocolate.AspNetCore.GraphiQL;
@@ -46,7 +47,7 @@ namespace ApiSamples
             }));
 
             services.AddScoped<QueryType>();
-            services.AddScoped<ISieveProcessor, SieveProcessor>();
+            services.AddScoped<ISieveProcessor, CustomSieveProcessor>();
 
             services.AddGraphQL(sp => Schema.Create(opts => {
                 opts.RegisterServiceProvider(sp);

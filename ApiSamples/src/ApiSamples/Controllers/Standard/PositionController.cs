@@ -7,6 +7,8 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Sieve.Models;
+using Sieve.Services;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -19,14 +21,17 @@ namespace ApiSamples.Controllers.Standard
     {
         readonly DatabaseContext Db;
         readonly IConfigurationProvider ConfigurationProvider;
+        readonly ISieveProcessor SieveProcessor;
 
         public PositionController(
             DatabaseContext db,
-            IConfigurationProvider configurationProvider
+            IConfigurationProvider configurationProvider,
+            ISieveProcessor sieveProcessor
         )
         {
             Db = db;
             ConfigurationProvider = configurationProvider;
+            SieveProcessor = sieveProcessor;
         }
 
         [HttpGet]
@@ -56,6 +61,16 @@ namespace ApiSamples.Controllers.Standard
                 .FirstOrDefaultAsync();
 
             return Ok(position);
+        }
+
+        [HttpGet("filtered")]
+        public async Task<IActionResult> Filtered([FromQuery]SieveModel model)
+        {
+            var set = Db.Set<Position>();
+            var filtered = await SieveProcessor.Apply(model, set)
+                .ToListAsync(); ;
+
+            return Ok(filtered);
         }
     }
 }
