@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Bogus" Version="25.0.2" />
+    <PackageReference Include="EmbedIO" Version="2.1.1" />
+    <PackageReference Include="FluentAssemblyScanner" Version="2.0.0" />
+    <PackageReference Include="Grace" Version="6.4.2" />
+  </ItemGroup>
+
+</Project>
