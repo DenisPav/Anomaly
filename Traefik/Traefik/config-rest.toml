@@ -1,0 +1,4 @@
+[rest]
+[entryPoints]
+    [entryPoints.http]
+    address = ":81"
