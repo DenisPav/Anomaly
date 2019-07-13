@@ -33,7 +33,11 @@ namespace GraphQLHotChoco.GraphQLMiddlewares
 
         private FieldWrapper GetFields(FieldNode fieldNode)
         {
-            var fieldName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(fieldNode.Name.Value);
+            //var fieldName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(fieldNode.Name.Value);
+            var fieldName = string.Join(string.Empty, fieldNode.Name
+                .Value
+                .Select(@char => @char.ToString())
+                .Select((charString, index) => index == 0 ? charString.ToUpper() : charString));
 
             var wrapper = new FieldWrapper
             {

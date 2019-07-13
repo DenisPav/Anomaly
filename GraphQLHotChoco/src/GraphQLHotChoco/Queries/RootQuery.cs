@@ -8,7 +8,6 @@ using HotChocolate.Types;
 using HotChocolate.Types.Relay;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace GraphQLHotChoco.Queries
 {
@@ -48,16 +47,13 @@ namespace GraphQLHotChoco.Queries
         protected override void Configure(IObjectTypeDescriptor<RootQuery> descriptor)
         {
             descriptor.Field(query => query.Users(default(IResolverContext), default(DatabaseContext)))
-                .Use<FieldCollectingMiddleware>()
-                .UsePaging<UserObjectType>();
+                .Use<FieldCollectingMiddleware>();
 
             descriptor.Field(query => query.UserRoles(default(IResolverContext), default(DatabaseContext)))
-                .Use<FieldCollectingMiddleware>()
-                .UsePaging<UserRolesObjectType>();
+                .Use<FieldCollectingMiddleware>();
 
             descriptor.Field(query => query.Roles(default(IResolverContext), default(DatabaseContext)))
-                .Use<FieldCollectingMiddleware>()
-                .UsePaging<RoleObjectType>();
+                .Use<FieldCollectingMiddleware>();
 
             descriptor.Field(query => query.Strings)
                 .UsePaging<StringType>();

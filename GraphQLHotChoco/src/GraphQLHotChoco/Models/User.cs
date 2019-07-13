@@ -11,7 +11,7 @@ namespace GraphQLHotChoco.Models
         public string UserName { get; set; }
         public string Email { get; set; }
 
-        public ICollection<UserRoles> UserRoles { get; set; }
+        public IEnumerable<UserRoles> UserRoles { get; set; }
     }
 
     public class UserConfiguration : IEntityTypeConfiguration<User>
