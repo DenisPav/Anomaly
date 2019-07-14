@@ -1,5 +1,4 @@
 ﻿using GraphQLHotChoco.GraphQLMiddlewares;
-using GraphQLHotChoco.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -78,22 +77,9 @@ namespace GraphQLHotChoco.Extensions
 
         static MemberAssignment CreateSelectBind(PropertyInfo property, ParameterExpression paramExpr, IEnumerable<FieldWrapper> fieldWrappers)
         {
-            var actualCollectionType = property.PropertyType.GetGenericArguments().First();
-            var ienumerableGenericType = typeof(IEnumerable<>).MakeGenericType(actualCollectionType);
-            var funcSelectorType = Expression.GetFuncType(actualCollectionType, actualCollectionType);
-            //var funcType = Expression.GetFuncType(ienumerableGenericType, funcSelectorType, ienumerableGenericType);
+            var memberExpression = MakeMemberAccess(paramExpr, property);
 
-            //to this differently later
-            var targetFunc = new Func<IEnumerable<UserRoles>, Func<UserRoles, UserRoles>, IEnumerable<UserRoles>>(Enumerable.Select).Method;
-
-            return Bind(
-                property,
-                Call(
-                    targetFunc,
-                    MakeMemberAccess(paramExpr, property),
-                    //new Lambda
-                    CreateSelection(actualCollectionType, fieldWrappers)
-                    ));
+            return CreateSelectBindInternal(property, paramExpr, memberExpression, fieldWrappers);
         }
 
         static MemberAssignment CreateClassBind(PropertyInfo property, ParameterExpression paramExpr, IEnumerable<FieldWrapper> fieldWrappers)
@@ -140,18 +126,30 @@ namespace GraphQLHotChoco.Extensions
 
         static MemberAssignment CreateClassNestedSelectBind(PropertyInfo rootPropertyInfo, PropertyInfo property, ParameterExpression paramExpr, IEnumerable<FieldWrapper> fieldWrappers)
         {
+            var memberExpression = MakeMemberAccess(
+                        MakeMemberAccess(
+                            paramExpr,
+                            rootPropertyInfo),
+                        property);
+
+            return CreateSelectBindInternal(property, paramExpr, memberExpression, fieldWrappers);
+        }
+
+        static MemberAssignment CreateSelectBindInternal(PropertyInfo property, ParameterExpression paramExpr, MemberExpression memberExpression, IEnumerable<FieldWrapper> fieldWrappers)
+        {
             var actualCollectionType = property.PropertyType.GetGenericArguments().First();
-            var targetFunc = new Func<IEnumerable<UserRoles>, Func<UserRoles, UserRoles>, IEnumerable<UserRoles>>(Enumerable.Select).Method;
 
             return Bind(
                 property,
                 Call(
-                    targetFunc,
-                    MakeMemberAccess(
-                        MakeMemberAccess(
-                            paramExpr,
-                            rootPropertyInfo),
-                        property),
+                    typeof(Enumerable),
+                    "Select",
+                    new Type[] {
+                        actualCollectionType,
+                        actualCollectionType
+                    },
+                    memberExpression,
+                    //new Lambda
                     CreateSelection(actualCollectionType, fieldWrappers)
                     ));
         }
