@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace HotChocholateExpandable.Models
 {
@@ -180,12 +179,24 @@ namespace HotChocholateExpandable.Models
     {
         protected override void Configure(IObjectTypeDescriptor<User> descriptor)
         {
-            descriptor.Field(x => x.Id);
-            descriptor.Field(x => x.Name);
-            descriptor.Field(x => x.Surname);
-            descriptor.Field(x => x.Email);
-
+            //custom resolver sample
             descriptor.Field("sample").Resolver(_ => "321321");
+        }
+    }
+
+    public class BlogObjectType : ObjectType<Blog>
+    {
+        protected override void Configure(IObjectTypeDescriptor<Blog> descriptor)
+        {
+
+        }
+    }
+
+    public class BlogPostObjectType : ObjectType<BlogPost>
+    {
+        protected override void Configure(IObjectTypeDescriptor<BlogPost> descriptor)
+        {
+
         }
     }
 
@@ -193,11 +204,15 @@ namespace HotChocholateExpandable.Models
     {
         protected override void Configure(IObjectTypeDescriptor<Comment> descriptor)
         {
-            descriptor.Field(x => x.BlogPost).Ignore();
-            descriptor.Field(x => x.Id);
-            descriptor.Field(x => x.Text);
-            //descriptor.Field(x => x.Surname);
-            //descriptor.Field(x => x.Email);
+            
+        }
+    }
+
+    public class TagObjectType : ObjectType<Tag>
+    {
+        protected override void Configure(IObjectTypeDescriptor<Tag> descriptor)
+        {
+
         }
     }
 
@@ -205,11 +220,7 @@ namespace HotChocholateExpandable.Models
     {
         protected override void Configure(IObjectTypeDescriptor<BlogPostApiModel> descriptor)
         {
-            //descriptor.Field(x => x.BlogPost).Ignore();
-            //descriptor.Field(x => x.Id);
-            //descriptor.Field(x => x.Text);
-            ////descriptor.Field(x => x.Surname);
-            //descriptor.Field(x => x.Email);
+            
         }
     }
 }

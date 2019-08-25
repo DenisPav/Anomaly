@@ -37,7 +37,11 @@ namespace HotChocholateExpandable
                 opts.RegisterQueryType<RootQuery>();
                 opts.RegisterType<RootQueryObject>();
                 opts.RegisterType<UserObjectType>();
+                opts.RegisterType<BlogObjectType>();
+                opts.RegisterType<BlogPostObjectType>();
                 opts.RegisterType<CommentObjectType>();
+                opts.RegisterType<TagObjectType>();
+                //custom api model
                 opts.RegisterType<BlogPostApiModelObjectType>();
             }), new QueryExecutionOptions { IncludeExceptionDetails = true });
         }
