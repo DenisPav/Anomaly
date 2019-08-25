@@ -95,58 +95,6 @@ namespace HotChocholateExpandable.Models
                 .WithOne(x => x.Blog)
                 .HasForeignKey(x => x.BlogId)
                 .IsRequired();
-
-            var initialData = new Blog
-            {
-                Id = Guid.NewGuid(),
-                Name = "Initial Blog",
-                Owner = new User
-                {
-                    Email = "sample@user.com",
-                    Id = 1,
-                    Name = "Sample",
-                    Surname = "User",
-                },
-                BlogPosts = new List<BlogPost> {
-                    new BlogPost
-                    {
-                        Id = 1,
-                        Title = "First Post",
-                        Description = "First Description",
-                        Content = "Some blog post content",
-                        Comments = new List<Comment>
-                        {
-                            new Comment
-                            {
-                                Id = Guid.NewGuid(),
-                                Text = "This is awful",
-                                OwnerId = 1
-                            }
-                        },
-                        BlogPostTags = new List<BlogPostTag>
-                        {
-                            new BlogPostTag
-                            {
-                                Tag = new Tag
-                                {
-                                    Id = 1,
-                                    TagName = "Code"
-                                }
-                            },
-                            new BlogPostTag
-                            {
-                                Tag = new Tag
-                                {
-                                    Id = 2,
-                                    TagName = "C#"
-                                }
-                            }
-                        }
-                    }
-                }
-            };
-
-            builder.HasData(initialData);
         }
     }
 
