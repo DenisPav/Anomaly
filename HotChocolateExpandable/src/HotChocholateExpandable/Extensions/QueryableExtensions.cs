@@ -28,49 +28,54 @@ namespace HotChocholateExpandable.Extensions
                 type,
                 type.Name);
 
-            var memberAsignments = new List<MemberAssignment>();
-
-            foreach (var wrapper in fieldWrappers)
-            {
-                var wrapperPropertyInfo = type.GetProperty(wrapper.Name);
-
-                if (wrapperPropertyInfo == null)
-                    return CreateSelection(type, wrapper.Nested);
-
-                var wrapperPropertyType = wrapperPropertyInfo.PropertyType;
-
-                MemberAssignment propertyBind = null;
-
-                if (!wrapperPropertyType.IsGenericType && (!wrapperPropertyType.IsClass || wrapperPropertyType.Equals(typeof(string))))
-                {
-                    //for flat property
-                    propertyBind = CreateBind(wrapperPropertyInfo, propertyExpr);
-                }
-                else if (wrapperPropertyType.IsGenericType)
-                {
-                    //for collections
-                    propertyBind = CreateSelectBind(wrapperPropertyInfo, propertyExpr, wrapper.Nested);
-                }
-                else
-                {
-                    //for non collection navigation properties
-                    propertyBind = CreateClassBind(wrapperPropertyInfo, propertyExpr, wrapper.Nested);
-                }
-
-                if (propertyBind != null)
-                {
-                    memberAsignments.Add(propertyBind);
-                }
-            }
+            var memberAssignments = CreateMemberAssignments(propertyExpr, fieldWrappers);
 
             var lambdaExpr = Lambda(
                 MemberInit(
                     New(type.GetConstructors().First()),
-                    memberAsignments.ToArray()
+                    memberAssignments.ToArray()
                     ),
                 propertyExpr);
 
             return lambdaExpr;
+        }
+
+        static IEnumerable<MemberAssignment> CreateMemberAssignments(ParameterExpression propertyExpression, IEnumerable<FieldWrapper> fieldWrappers)
+        {
+            foreach (var wrapper in fieldWrappers)
+            {
+                var wrapperPropertyInfo = propertyExpression.Type.GetProperty(wrapper.Name);
+
+                if (wrapperPropertyInfo == null)
+                {
+                    var nested = CreateMemberAssignments(propertyExpression, wrapper.Nested);
+
+                    foreach (var item in nested)
+                    {
+                        yield return item;
+                    }
+                }
+                else
+                {
+                    var wrapperPropertyType = wrapperPropertyInfo.PropertyType;
+
+                    if (!wrapperPropertyType.IsGenericType && (!wrapperPropertyType.IsClass || wrapperPropertyType.Equals(typeof(string))))
+                    {
+                        //for flat property
+                        yield return CreateBind(wrapperPropertyInfo, propertyExpression);
+                    }
+                    else if (wrapperPropertyType.IsGenericType)
+                    {
+                        //for collections
+                        yield return CreateSelectBind(wrapperPropertyInfo, propertyExpression, wrapper.Nested);
+                    }
+                    else
+                    {
+                        //for non collection navigation properties
+                        yield return CreateClassBind(wrapperPropertyInfo, propertyExpression, wrapper.Nested);
+                    }
+                }
+            }
         }
 
         static MemberAssignment CreateBind(PropertyInfo property, ParameterExpression paramExpr)
