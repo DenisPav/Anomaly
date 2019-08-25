@@ -1,7 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using HotChocolate.Types;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace HotChocholateExpandable.Models
 {
@@ -34,6 +36,19 @@ namespace HotChocholateExpandable.Models
         public Blog Blog { get; set; }
         public ICollection<Comment> Comments { get; set; }
         public ICollection<BlogPostTag> BlogPostTags { get; set; }
+    }
+
+    public class BlogPostApiModel
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string Content { get; set; }
+
+        public Guid BlogId { get; set; }
+        public Blog Blog { get; set; }
+        public IEnumerable<Comment> Comments { get; set; }
+        public IEnumerable<Tag> BlogPostTags { get; set; }
     }
 
     public class Comment
@@ -158,6 +173,43 @@ namespace HotChocholateExpandable.Models
         public void Configure(EntityTypeBuilder<BlogPostTag> builder)
         {
             builder.HasKey(x => new { x.BlogPostId, x.TagId });
+        }
+    }
+
+    public class UserObjectType : ObjectType<User>
+    {
+        protected override void Configure(IObjectTypeDescriptor<User> descriptor)
+        {
+            descriptor.Field(x => x.Id);
+            descriptor.Field(x => x.Name);
+            descriptor.Field(x => x.Surname);
+            descriptor.Field(x => x.Email);
+
+            descriptor.Field("sample").Resolver(_ => "321321");
+        }
+    }
+
+    public class CommentObjectType : ObjectType<Comment>
+    {
+        protected override void Configure(IObjectTypeDescriptor<Comment> descriptor)
+        {
+            descriptor.Field(x => x.BlogPost).Ignore();
+            descriptor.Field(x => x.Id);
+            descriptor.Field(x => x.Text);
+            //descriptor.Field(x => x.Surname);
+            //descriptor.Field(x => x.Email);
+        }
+    }
+
+    public class BlogPostApiModelObjectType : ObjectType<BlogPostApiModel>
+    {
+        protected override void Configure(IObjectTypeDescriptor<BlogPostApiModel> descriptor)
+        {
+            //descriptor.Field(x => x.BlogPost).Ignore();
+            //descriptor.Field(x => x.Id);
+            //descriptor.Field(x => x.Text);
+            ////descriptor.Field(x => x.Surname);
+            //descriptor.Field(x => x.Email);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using HotChocholateExpandable.Database;
+using HotChocholateExpandable.GraphQL;
 using HotChocholateExpandable.Models;
 using HotChocolate;
 using HotChocolate.AspNetCore;
@@ -31,7 +32,11 @@ namespace HotChocholateExpandable
             {
                 opts.RegisterServiceProvider(sp);
 
-                //opts.RegisterQueryType<RootQuery>();
+                opts.RegisterQueryType<RootQuery>();
+                opts.RegisterType<RootQueryObject>();
+                opts.RegisterType<UserObjectType>();
+                opts.RegisterType<CommentObjectType>();
+                opts.RegisterType<BlogPostApiModelObjectType>();
                 //opts.RegisterType<RootQueryObjectType>();
                 //opts.RegisterType<UserObjectType>();
                 //opts.RegisterType<UserRolesObjectType>();
