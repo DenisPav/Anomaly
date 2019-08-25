@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace HotChocholateExpandable
 {
@@ -94,6 +95,13 @@ namespace HotChocholateExpandable
                     }
                 }
             };
+
+            var blogs = db.Set<Blog>();
+            if (!blogs.Any())
+            {
+                blogs.Add(initialData);
+                db.SaveChanges();
+            }
 
             app.UseMvc();
             app.UseGraphQL("/graphql");
