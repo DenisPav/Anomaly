@@ -32,18 +32,9 @@ namespace HotChocholateExpandable.GraphQL
                 .ApplyFields(fieldsToResolve);
         }
 
-        public BlogPostApiModel From(BlogPost blog)
-        {
-            return new BlogPostApiModel()
-            {
-
-            };
-        }
-
         public IEnumerable<BlogPost> BlogPosts(IResolverContext ctx, [Service]DatabaseContext db)
         {
             var fieldsToResolve = ctx.ContextData[FieldCollectingMiddleware.DataKey] as List<FieldWrapper>;
-
 
             return db.Set<BlogPost>()
                 .AsNoTracking()
@@ -53,7 +44,6 @@ namespace HotChocholateExpandable.GraphQL
         public IEnumerable<BlogPostApiModel> BlogPostApiModels(IResolverContext ctx, [Service]DatabaseContext db)
         {
             var fieldsToResolve = ctx.ContextData[FieldCollectingMiddleware.DataKey] as List<FieldWrapper>;
-
 
             return db.Set<BlogPost>()
                 .AsNoTracking()
