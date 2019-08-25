@@ -4,6 +4,7 @@ using HotChocholateExpandable.Models;
 using HotChocolate;
 using HotChocolate.AspNetCore;
 using HotChocolate.AspNetCore.Voyager;
+using HotChocolate.Execution.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +28,8 @@ namespace HotChocholateExpandable
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.AddDbContext<DatabaseContext>(opts => opts.UseSqlite(Config["Db"]).EnableSensitiveDataLogging(true));
+            services.AddDbContext<DatabaseContext>(opts => opts.UseSqlite(Config["Db"]).EnableSensitiveDataLogging(true), ServiceLifetime.Transient);
+
             services.AddGraphQL(sp => Schema.Create(opts =>
             {
                 opts.RegisterServiceProvider(sp);
@@ -37,11 +39,7 @@ namespace HotChocholateExpandable
                 opts.RegisterType<UserObjectType>();
                 opts.RegisterType<CommentObjectType>();
                 opts.RegisterType<BlogPostApiModelObjectType>();
-                //opts.RegisterType<RootQueryObjectType>();
-                //opts.RegisterType<UserObjectType>();
-                //opts.RegisterType<UserRolesObjectType>();
-                //opts.RegisterType<RoleObjectType>();
-            }));
+            }), new QueryExecutionOptions { IncludeExceptionDetails = true });
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, DatabaseContext db)

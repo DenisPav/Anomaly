@@ -1,9 +1,7 @@
 ﻿using HotChocholateExpandable.Database;
-using HotChocholateExpandable.Extensions;
 using HotChocholateExpandable.GraphQL.Middlewares;
 using HotChocholateExpandable.Models;
 using HotChocolate;
-using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using HotChocolate.Types.Relay;
 using Microsoft.EntityFrameworkCore;
@@ -14,37 +12,26 @@ namespace HotChocholateExpandable.GraphQL
 {
     public class RootQuery
     {
-        public IEnumerable<User> Users(IResolverContext ctx, [Service]DatabaseContext db)
+        public IEnumerable<User> Users([Service]DatabaseContext db)
         {
-            var fieldsToResolve = ctx.ContextData[FieldCollectingMiddleware.DataKey] as List<FieldWrapper>;
-
             return db.Set<User>()
-                .AsNoTracking()
-                .ApplyFields(fieldsToResolve);
+                .AsNoTracking();
         }
 
-        public IEnumerable<Blog> Blogs(IResolverContext ctx, [Service]DatabaseContext db)
+        public IEnumerable<Blog> Blogs([Service]DatabaseContext db)
         {
-            var fieldsToResolve = ctx.ContextData[FieldCollectingMiddleware.DataKey] as List<FieldWrapper>;
-
             return db.Set<Blog>()
-                .AsNoTracking()
-                .ApplyFields(fieldsToResolve);
+                .AsNoTracking();
         }
 
-        public IEnumerable<BlogPost> BlogPosts(IResolverContext ctx, [Service]DatabaseContext db)
+        public IEnumerable<BlogPost> BlogPosts([Service]DatabaseContext db)
         {
-            var fieldsToResolve = ctx.ContextData[FieldCollectingMiddleware.DataKey] as List<FieldWrapper>;
-
             return db.Set<BlogPost>()
-                .AsNoTracking()
-                .ApplyFields(fieldsToResolve);
+                .AsNoTracking();
         }
 
-        public IEnumerable<BlogPostApiModel> BlogPostApiModels(IResolverContext ctx, [Service]DatabaseContext db)
+        public IEnumerable<BlogPostApiModel> BlogPostApiModels([Service]DatabaseContext db)
         {
-            var fieldsToResolve = ctx.ContextData[FieldCollectingMiddleware.DataKey] as List<FieldWrapper>;
-
             return db.Set<BlogPost>()
                 .AsNoTracking()
                 .Select(blog => new BlogPostApiModel
@@ -57,8 +44,7 @@ namespace HotChocholateExpandable.GraphQL
                     Blog = blog.Blog,
                     Comments = blog.Comments,
                     BlogPostTags = blog.BlogPostTags.Select(blogBlogPostTag => blogBlogPostTag.Tag)
-                })
-                .ApplyFields(fieldsToResolve);
+                });
         }
     }
 
@@ -66,17 +52,21 @@ namespace HotChocholateExpandable.GraphQL
     {
         protected override void Configure(IObjectTypeDescriptor<RootQuery> descriptor)
         {
-            descriptor.Field(x => x.Users(default(IResolverContext), default(DatabaseContext)))
-                .Use<FieldCollectingMiddleware>();
-
-            descriptor.Field(x => x.Blogs(default(IResolverContext), default(DatabaseContext)))
-                .Use<FieldCollectingMiddleware>();
-
-            descriptor.Field(x => x.BlogPosts(default(IResolverContext), default(DatabaseContext)))
-                .Use<FieldCollectingMiddleware>();
-
-            descriptor.Field(x => x.BlogPostApiModels(default(IResolverContext), default(DatabaseContext)))
+            descriptor.Field(x => x.Users(default(DatabaseContext)))
                 .Use<FieldCollectingMiddleware>()
+                .Use<ExpandableFieldMiddleware<User>>();
+
+            descriptor.Field(x => x.Blogs(default(DatabaseContext)))
+                .Use<FieldCollectingMiddleware>()
+                .Use<ExpandableFieldMiddleware<Blog>>();
+
+            descriptor.Field(x => x.BlogPosts(default(DatabaseContext)))
+                .Use<FieldCollectingMiddleware>()
+                .Use<ExpandableFieldMiddleware<BlogPost>>();
+
+            descriptor.Field(x => x.BlogPostApiModels(default(DatabaseContext)))
+                .Use<FieldCollectingMiddleware>()
+                .Use<ExpandableFieldMiddleware<BlogPostApiModel>>()
                 .UsePaging<BlogPostApiModelObjectType>();
         }
     }
