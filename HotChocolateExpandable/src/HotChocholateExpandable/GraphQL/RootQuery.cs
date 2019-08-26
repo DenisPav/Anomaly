@@ -5,32 +5,31 @@ using HotChocolate;
 using HotChocolate.Types;
 using HotChocolate.Types.Relay;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace HotChocholateExpandable.GraphQL
 {
     public class RootQuery
     {
-        public IEnumerable<User> Users([Service]DatabaseContext db)
+        public IQueryable<User> Users([Service]DatabaseContext db)
         {
             return db.Set<User>()
                 .AsNoTracking();
         }
 
-        public IEnumerable<Blog> Blogs([Service]DatabaseContext db)
+        public IQueryable<Blog> Blogs([Service]DatabaseContext db)
         {
             return db.Set<Blog>()
                 .AsNoTracking();
         }
 
-        public IEnumerable<BlogPost> BlogPosts([Service]DatabaseContext db)
+        public IQueryable<BlogPost> BlogPosts([Service]DatabaseContext db)
         {
             return db.Set<BlogPost>()
                 .AsNoTracking();
         }
 
-        public IEnumerable<BlogPostApiModel> BlogPostApiModels([Service]DatabaseContext db)
+        public IQueryable<BlogPostApiModel> BlogPostApiModels([Service]DatabaseContext db)
         {
             return db.Set<BlogPost>()
                 .AsNoTracking()
@@ -54,20 +53,24 @@ namespace HotChocholateExpandable.GraphQL
         {
             descriptor.Field(x => x.Users(default(DatabaseContext)))
                 .Use<FieldCollectingMiddleware>()
-                .Use<ExpandableFieldMiddleware<User>>();
+                .Use<ExpandableFieldMiddleware<User>>()
+                .UseFiltering();
 
             descriptor.Field(x => x.Blogs(default(DatabaseContext)))
                 .Use<FieldCollectingMiddleware>()
-                .Use<ExpandableFieldMiddleware<Blog>>();
+                .Use<ExpandableFieldMiddleware<Blog>>()
+                .UseFiltering();
 
             descriptor.Field(x => x.BlogPosts(default(DatabaseContext)))
                 .Use<FieldCollectingMiddleware>()
-                .Use<ExpandableFieldMiddleware<BlogPost>>();
+                .Use<ExpandableFieldMiddleware<BlogPost>>()
+                .UseFiltering();
 
             descriptor.Field(x => x.BlogPostApiModels(default(DatabaseContext)))
                 .Use<FieldCollectingMiddleware>()
                 .Use<ExpandableFieldMiddleware<BlogPostApiModel>>()
-                .UsePaging<BlogPostApiModelObjectType>();
+                .UsePaging<BlogPostApiModelObjectType>()
+                .UseFiltering();
         }
     }
 }

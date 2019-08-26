@@ -1,8 +1,5 @@
-﻿using HotChocholateExpandable.Database;
-using HotChocholateExpandable.Extensions;
-using HotChocholateExpandable.Models;
+﻿using HotChocholateExpandable.Extensions;
 using HotChocolate.Resolvers;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,12 +19,12 @@ namespace HotChocholateExpandable.GraphQL.Middlewares
         {
             await Next(ctx).ConfigureAwait(false);
 
-            if(ctx.ContextData.TryGetValue(FieldCollectingMiddleware.DataKey, out var collectedFields))
+            if (ctx.ContextData.TryGetValue(FieldCollectingMiddleware.DataKey, out var collectedFields))
             {
                 var fields = collectedFields as IEnumerable<FieldWrapper>;
                 var castedResult = ctx.Result as IQueryable;
 
-                if(castedResult != null)
+                if (castedResult != null)
                 {
                     var casted = ctx.Result as IQueryable<TModel>;
                     var selected = casted.CreateSelection(fields);
