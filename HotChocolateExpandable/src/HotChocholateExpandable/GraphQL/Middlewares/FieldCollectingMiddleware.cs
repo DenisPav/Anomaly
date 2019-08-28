@@ -1,6 +1,10 @@
-﻿using HotChocolate.Language;
+﻿using HotChocolate;
+using HotChocolate.Language;
 using HotChocolate.Resolvers;
+using HotChocolate.Types;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -16,44 +20,46 @@ namespace HotChocholateExpandable.GraphQL.Middlewares
             Next = next;
         }
 
-        public async Task InvokeAsync(IMiddlewareContext ctx)
+        public async Task InvokeAsync(IMiddlewareContext ctx, ISchema schema)
         {
-            var collected = ctx.FieldSelection
-                        .SelectionSet
-                        .Selections
-                        .Select(selection => selection as FieldNode)
-                        .Select(GetFields)
-                        .ToList();
-
+            var collected = GetFields(ctx, schema, ctx.FieldSelection.SelectionSet, ctx.Field.Type.InnerType() as ObjectType);
             ctx.ContextData[DataKey] = collected;
 
             await Next(ctx);
         }
 
-        private FieldWrapper GetFields(FieldNode fieldNode)
+        private IEnumerable<FieldWrapper> GetFields(IMiddlewareContext ctx, ISchema schema, SelectionSetNode selectionSet, ObjectType currentObjectType)
         {
-            //var fieldName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(fieldNode.Name.Value);
-            var fieldName = string.Join(string.Empty, fieldNode.Name
-                .Value
-                .Select(@char => @char.ToString())
-                .Select((charString, index) => index == 0 ? charString.ToUpper() : charString));
+            IReadOnlyCollection<IFieldSelection> selections = new ReadOnlyCollection<IFieldSelection>(Enumerable.Empty<IFieldSelection>().ToList());
 
-            var wrapper = new FieldWrapper
+            try
             {
-                Name = fieldName
-            };
-
-            if (fieldNode.SelectionSet != null)
+                selections = ctx.CollectFields(currentObjectType, selectionSet);
+            } catch(Exception e)
             {
-                fieldNode.SelectionSet
-                    .Selections
-                    .Select(x => x as FieldNode)
-                    .Select(nestedFieldNode => GetFields(nestedFieldNode))
-                    .ToList()
-                    .ForEach(nestedFieldDef => wrapper.Nested.Add(nestedFieldDef));
+                //log this later
             }
 
-            return wrapper;
+            if (selections.Any())
+            {
+                foreach (var selection in selections)
+                {
+                    var fieldNode = (selection.Selection as FieldNode);
+                    var fieldName = currentObjectType.Fields
+                        .FirstOrDefault(field => field.Name == fieldNode.Name.Value)
+                        ?.Member
+                        ?.Name;
+
+                    var wrapper = new FieldWrapper
+                    {
+                        Name = fieldName ?? fieldNode.Name.Value,
+                        Nested = selection.Selection.SelectionSet != null ? GetFields(ctx, schema, selection.Selection.SelectionSet, selection.Field.Type.InnerType() as ObjectType ?? selection.Field.DeclaringType)
+                            .ToList() : Enumerable.Empty<FieldWrapper>().ToList()
+                    };
+
+                    yield return wrapper;
+                }
+            }
         }
     }
 

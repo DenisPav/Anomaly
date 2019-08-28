@@ -179,6 +179,7 @@ namespace HotChocholateExpandable.Models
     {
         protected override void Configure(IObjectTypeDescriptor<User> descriptor)
         {
+            descriptor.Name("users");
             //custom resolver sample
             descriptor.Field("sample").Resolver(_ => "321321");
         }
@@ -188,7 +189,7 @@ namespace HotChocholateExpandable.Models
     {
         protected override void Configure(IObjectTypeDescriptor<Blog> descriptor)
         {
-
+            descriptor.Name("blogs");
         }
     }
 
@@ -196,7 +197,7 @@ namespace HotChocholateExpandable.Models
     {
         protected override void Configure(IObjectTypeDescriptor<BlogPost> descriptor)
         {
-
+            descriptor.Name("blogPosts");
         }
     }
 
@@ -204,7 +205,7 @@ namespace HotChocholateExpandable.Models
     {
         protected override void Configure(IObjectTypeDescriptor<Comment> descriptor)
         {
-            
+
         }
     }
 
@@ -220,7 +221,7 @@ namespace HotChocholateExpandable.Models
     {
         protected override void Configure(IObjectTypeDescriptor<BlogPostApiModel> descriptor)
         {
-            
+            descriptor.Name("blogPostApiModels");
         }
     }
 }
