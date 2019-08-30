@@ -29,6 +29,13 @@ namespace HotChocholateExpandable.GraphQL
                 .AsNoTracking();
         }
 
+
+        public IQueryable<Tag> Tags([Service]DatabaseContext db)
+        {
+            return db.Set<Tag>()
+                .AsNoTracking();
+        }
+
         public IQueryable<BlogPostApiModel> BlogPostApiModels([Service]DatabaseContext db)
         {
             return db.Set<BlogPost>()
@@ -64,6 +71,11 @@ namespace HotChocholateExpandable.GraphQL
             descriptor.Field(x => x.BlogPosts(default(DatabaseContext)))
                 .Use<FieldCollectingMiddleware>()
                 .Use<ExpandableFieldMiddleware<BlogPost>>()
+                .UseFiltering();
+
+            descriptor.Field(x => x.Tags(default(DatabaseContext)))
+                .Use<FieldCollectingMiddleware>()
+                .Use<ExpandableFieldMiddleware<Tag>>()
                 .UseFiltering();
 
             descriptor.Field(x => x.BlogPostApiModels(default(DatabaseContext)))
