@@ -10,10 +10,7 @@ namespace HotChocholateExpandable.GraphQL.Middlewares
     {
         readonly FieldDelegate Next;
 
-        public ExpandableFieldMiddleware(FieldDelegate next)
-        {
-            Next = next;
-        }
+        public ExpandableFieldMiddleware(FieldDelegate next) => Next = next;
 
         public async Task InvokeAsync(IMiddlewareContext ctx)
         {

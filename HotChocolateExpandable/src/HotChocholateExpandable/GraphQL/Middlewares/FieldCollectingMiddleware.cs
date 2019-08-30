@@ -2,9 +2,7 @@
 using HotChocolate.Language;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
-using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -15,30 +13,18 @@ namespace HotChocholateExpandable.GraphQL.Middlewares
         public const string DataKey = "fieldsToResolve";
         readonly FieldDelegate Next;
 
-        public FieldCollectingMiddleware(FieldDelegate next)
-        {
-            Next = next;
-        }
+        public FieldCollectingMiddleware(FieldDelegate next) => Next = next;
 
         public async Task InvokeAsync(IMiddlewareContext ctx, ISchema schema)
         {
-            var collected = GetFields(ctx, schema, ctx.FieldSelection.SelectionSet, ctx.Field.Type.InnerType() as ObjectType);
-            ctx.ContextData[DataKey] = collected;
+            ctx.ContextData[DataKey] = GetFields(ctx, schema, ctx.FieldSelection.SelectionSet, ctx.Field.Type.InnerType() as ObjectType);
 
             await Next(ctx);
         }
 
         private IEnumerable<FieldWrapper> GetFields(IMiddlewareContext ctx, ISchema schema, SelectionSetNode selectionSet, ObjectType currentObjectType)
         {
-            IReadOnlyCollection<IFieldSelection> selections = new ReadOnlyCollection<IFieldSelection>(Enumerable.Empty<IFieldSelection>().ToList());
-
-            try
-            {
-                selections = ctx.CollectFields(currentObjectType, selectionSet);
-            } catch(Exception e)
-            {
-                //log this later
-            }
+            var selections = ctx.CollectFields(currentObjectType, selectionSet);
 
             if (selections.Any())
             {
@@ -53,8 +39,9 @@ namespace HotChocholateExpandable.GraphQL.Middlewares
                     var wrapper = new FieldWrapper
                     {
                         Name = fieldName ?? fieldNode.Name.Value,
-                        Nested = selection.Selection.SelectionSet != null ? GetFields(ctx, schema, selection.Selection.SelectionSet, selection.Field.Type.InnerType() as ObjectType ?? selection.Field.DeclaringType)
-                            .ToList() : Enumerable.Empty<FieldWrapper>().ToList()
+                        Nested = selection.Selection.SelectionSet != null
+                            ? GetFields(ctx, schema, selection.Selection.SelectionSet, selection.Field.Type.InnerType() as ObjectType).ToList()
+                            : Enumerable.Empty<FieldWrapper>().ToList()
                     };
 
                     yield return wrapper;
@@ -66,6 +53,6 @@ namespace HotChocholateExpandable.GraphQL.Middlewares
     public class FieldWrapper
     {
         public string Name { get; set; }
-        public List<FieldWrapper> Nested { get; set; } = new List<FieldWrapper>();
+        public List<FieldWrapper> Nested { get; set; }
     }
 }
