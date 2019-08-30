@@ -1,4 +1,5 @@
 ﻿using HotChocholateExpandable.Database;
+using HotChocholateExpandable.Extensions;
 using HotChocholateExpandable.GraphQL;
 using HotChocholateExpandable.Models;
 using HotChocolate;
@@ -53,62 +54,7 @@ namespace HotChocholateExpandable
                 app.UseDeveloperExceptionPage();
             }
 
-            var initialData = new Blog
-            {
-                Id = Guid.NewGuid(),
-                Name = "Initial Blog",
-                Owner = new User
-                {
-                    Email = "sample@user.com",
-                    Id = 1,
-                    Name = "Sample",
-                    Surname = "User",
-                },
-                BlogPosts = new List<BlogPost> {
-                    new BlogPost
-                    {
-                        Id = 1,
-                        Title = "First Post",
-                        Description = "First Description",
-                        Content = "Some blog post content",
-                        Comments = new List<Comment>
-                        {
-                            new Comment
-                            {
-                                Id = Guid.NewGuid(),
-                                Text = "This is awful",
-                                OwnerId = 1
-                            }
-                        },
-                        BlogPostTags = new List<BlogPostTag>
-                        {
-                            new BlogPostTag
-                            {
-                                Tag = new Tag
-                                {
-                                    Id = 1,
-                                    TagName = "Code"
-                                }
-                            },
-                            new BlogPostTag
-                            {
-                                Tag = new Tag
-                                {
-                                    Id = 2,
-                                    TagName = "C#"
-                                }
-                            }
-                        }
-                    }
-                }
-            };
-
-            var blogs = db.Set<Blog>();
-            if (!blogs.Any())
-            {
-                blogs.Add(initialData);
-                db.SaveChanges();
-            }
+            db.Seed();
 
             app.UseMvc();
             app.UseGraphQL("/graphql");
