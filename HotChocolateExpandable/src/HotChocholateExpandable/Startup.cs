@@ -29,7 +29,7 @@ namespace HotChocholateExpandable
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.AddDbContext<DatabaseContext>(opts => opts.UseSqlite(Config["Db"]).EnableSensitiveDataLogging(true), ServiceLifetime.Transient);
+            services.AddDbContext<DatabaseContext>(opts => opts.UseSqlite(Config["Db"]).EnableSensitiveDataLogging(true), ServiceLifetime.Scoped);
 
             services.AddGraphQL(sp => Schema.Create(opts =>
             {

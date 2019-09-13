@@ -1,4 +1,5 @@
-﻿using HotChocholateExpandable.Extensions;
+﻿using HotChocholateExpandable.Database;
+using HotChocholateExpandable.Extensions;
 using HotChocolate.Resolvers;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace HotChocholateExpandable.GraphQL.Middlewares
 
         public ExpandableFieldMiddleware(FieldDelegate next) => Next = next;
 
-        public async Task InvokeAsync(IMiddlewareContext ctx)
+        public async Task InvokeAsync(IMiddlewareContext ctx, DatabaseContext db)
         {
             await Next(ctx).ConfigureAwait(false);
 
@@ -26,10 +27,9 @@ namespace HotChocholateExpandable.GraphQL.Middlewares
                     var casted = ctx.Result as IQueryable<TModel>;
                     var selected = casted.CreateSelection(fields);
 
-                    ctx.Result = selected;
+                    ctx.Result = selected.ToList();
                 }
             }
-
         }
     }
 }
