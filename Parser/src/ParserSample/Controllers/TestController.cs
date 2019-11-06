@@ -3,6 +3,7 @@ using ParserSample.Expressions;
 using ParserSample.Filters;
 using ParserSample.Models;
 using ParserSample.Parsers;
+using System;
 using System.Linq;
 
 namespace ParserSample.Controllers
@@ -27,19 +28,29 @@ namespace ParserSample.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            var query = "Id = 5 OR Id = 12";
-            
+            var query = "Id = '11c43ee8-b9d3-4e51-b73f-bd9dda66e29c' AND Date > '2019-11-05' AND Title = 'Maggie' AND Count = 133";
+
             var filterDefinitions = FilterParser.Parse(query);
             var filterExpression = ExpressionProvider.CreateFilterExpression(filterDefinitions);
 
             var fakeData = Enumerable.Repeat(1, 500)
                 .Select((_, index) => new Post
                 {
-                    Id = index,
+                    Id = Guid.Empty,
                     Count = index + index,
-                    Name = index + index.ToString()
+                    Name = index + index.ToString(),
+                    CreationDate = DateTime.Now.AddDays(index)
                 })
                 .ToList()
+                .Concat(new[] {
+                    new Post
+                    {
+                        Id = Guid.Parse("11c43ee8-b9d3-4e51-b73f-bd9dda66e29c"),
+                        Count = 133,
+                        Name = "Maggie",
+                        CreationDate = DateTime.Now
+                    }
+                })
                 .AsQueryable();
 
             var filtered = fakeData.Where(filterExpression)

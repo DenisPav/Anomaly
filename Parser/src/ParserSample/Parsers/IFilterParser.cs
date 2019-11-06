@@ -4,6 +4,7 @@ using Superpower.Model;
 using Superpower.Parsers;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using static System.Linq.Expressions.Expression;
@@ -47,10 +48,10 @@ namespace ParserSample.Parsers
             }
         };
 
-        public const string GreaterThanStr = ">";
-        public const string LessThanStr = "<";
-        public const string EqualStr = "=";
-        public const string NotEqualStr = "!=";
+        const string GreaterThanStr = ">";
+        const string LessThanStr = "<";
+        const string EqualStr = "=";
+        const string NotEqualStr = "!=";
 
         public static Func<Expression, Expression, BinaryExpression> GetExpressionFactory(string operationStr) 
             => Operations.Single(operation => operation.String == operationStr)
@@ -136,7 +137,7 @@ namespace ParserSample.Parsers
             });
 
             LogicalOperationParser = combinedLogicalOperationParsers.OptionalOrDefault(new TextSpan(""));
-            ValueParser = Character.Digit.Many();
+            ValueParser = Character.Except('\'').Many().Between(Character.EqualTo('\''), Character.EqualTo('\'')).Or(Character.Digit.Many());
         }
 
         public IEnumerable<FilterDefinition> Parse(string filterQuery)
@@ -145,12 +146,13 @@ namespace ParserSample.Parsers
                 .Trim();
             var splittedQuery = sanitizedQuery.Split(LogicalOperations.Select(operation => operation.String).ToArray(), StringSplitOptions.RemoveEmptyEntries);
 
+            Type GetPropertyType(string property) => FilterBuilder.FilterDefinition.PropertyDefinitions[property].MemberType;
             var dynamicParser = (from parserDefinition in (
                                     from prop in PropertyParser
                                     from operation in OperationParser
                                     from value in ValueParser
                                     from logicalOperation in LogicalOperationParser
-                                    select new FilterDefinition(prop.ToStringValue(), operation.ToStringValue(), int.Parse(value), logicalOperation.ToStringValue())
+                                    select new FilterDefinition(prop.ToStringValue(), operation.ToStringValue(), TypeDescriptor.GetConverter(GetPropertyType(prop.ToStringValue())).ConvertFromInvariantString(new string(value)), logicalOperation.ToStringValue())
                                     )
                                     .Repeat(splittedQuery.Count())
                                  select parserDefinition);

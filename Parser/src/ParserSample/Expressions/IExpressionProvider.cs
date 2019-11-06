@@ -17,7 +17,7 @@ namespace ParserSample.Expressions
     {
         readonly FilterContainer<TEntity> FilterContainer;
 
-        IDictionary<string, MemberExpression> EntityPropertyDefinitions => FilterContainer.FilterBuilder
+        IDictionary<string, FilterPropertyDefinition> EntityPropertyDefinitions => FilterContainer.FilterBuilder
             .FilterDefinition
             .PropertyDefinitions;
 
@@ -31,7 +31,7 @@ namespace ParserSample.Expressions
         {
             var entityFilter = filterDefinitions.Select(def => new
             {
-                Expression = EntityPropertyDefinitions[def.Property],
+                PropertyDefinition = EntityPropertyDefinitions[def.Property],
                 Logical = def.Logical,
                 Operation = def.Operation,
                 Value = def.Value
@@ -40,7 +40,7 @@ namespace ParserSample.Expressions
 
             var expressions = entityFilter.Select(filter =>
             {
-                var convertExpression = Convert(filter.Expression, typeof(int));
+                var convertExpression = filter.PropertyDefinition.MemberExpression;
                 var constantExpression = Constant(filter.Value);
 
                 BinaryExpression GetBinaryExpr(string operation) => FilterParserConfiguration.GetExpressionFactory(operation)(convertExpression, constantExpression);

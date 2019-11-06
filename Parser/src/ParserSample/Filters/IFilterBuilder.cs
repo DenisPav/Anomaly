@@ -2,14 +2,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Reflection;
 using static System.Linq.Expressions.Expression;
 
 namespace ParserSample.Filters
 {
+    public class FilterPropertyDefinition
+    {
+        public MemberExpression MemberExpression { get; set; }
+        public Type MemberType { get; set; }
+    }
+
     public class FilterEntityDefinition<TEntity>
     {
         public ParameterExpression ParamExpr = null;
-        public Dictionary<string, MemberExpression> PropertyDefinitions = new Dictionary<string, MemberExpression>();
+        public Dictionary<string, FilterPropertyDefinition> PropertyDefinitions = new Dictionary<string, FilterPropertyDefinition>();
     }
 
     public class FilterBuilder<TEntity>
@@ -19,6 +26,7 @@ namespace ParserSample.Filters
         public void Define<TTarget>(string name, Expression<Func<TEntity, TTarget>> property)
         {
             var memberInfo = (property.Body as MemberExpression).Member;
+            var propertyInfo = memberInfo as PropertyInfo;
 
             if (FilterDefinition.ParamExpr == null)
             {
@@ -26,7 +34,11 @@ namespace ParserSample.Filters
             }
 
             var memberExpr = MakeMemberAccess(FilterDefinition.ParamExpr, memberInfo);
-            FilterDefinition.PropertyDefinitions.Add(name, memberExpr);
+            FilterDefinition.PropertyDefinitions.Add(name, new FilterPropertyDefinition
+            {
+                MemberExpression = memberExpr,
+                MemberType = propertyInfo.PropertyType ?? Nullable.GetUnderlyingType(propertyInfo.PropertyType)
+            });
         }
     }
 
@@ -46,6 +58,8 @@ namespace ParserSample.Filters
         {
             configuration.Define("Id", post => post.Id);
             configuration.Define("Count", post => post.Count);
+            configuration.Define("Date", post => post.CreationDate);
+            configuration.Define("Title", post => post.Name);
         }
     }
 
