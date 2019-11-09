@@ -11,24 +11,22 @@ namespace ParserSample.Controllers
     [Route("[controller]")]
     public class TestController : ControllerBase
     {
-        readonly FilterContainer<Post> FilterContainer;
         readonly IFilterParser<Post> FilterParser;
         readonly IExpressionProvider<Post> ExpressionProvider;
 
         public TestController(
-            FilterContainer<Post> filterContainer,
             IFilterParser<Post> filterParser,
             IExpressionProvider<Post> expressionProvider)
         {
-            FilterContainer = filterContainer;
             FilterParser = filterParser;
             ExpressionProvider = expressionProvider;
         }
 
         [HttpGet]
-        public IActionResult Get()
+        public IActionResult Get([FromQuery]FilterRequestModel model)
         {
-            var query = "Id = '11c43ee8-b9d3-4e51-b73f-bd9dda66e29c' AND Date > '2019-11-05' AND Title = 'Maggie' AND Count = 133";
+            //sample: Id = '11c43ee8-b9d3-4e51-b73f-bd9dda66e29c' AND Date > '2019-11-05' AND Title = 'Maggie' AND Count <= 133
+            var query = model.Filter;
 
             var filterDefinitions = FilterParser.Parse(query);
             var filterExpression = ExpressionProvider.CreateFilterExpression(filterDefinitions);
