@@ -35,10 +35,10 @@ namespace ParserSample.Expressions
 
             var expressions = entityFilter.Select(filter =>
             {
-                var convertExpression = filter.PropertyDefinition.MemberExpression;
+                var memberExpression = filter.PropertyDefinition.MemberExpression;
                 var constantExpression = Constant(filter.Value);
 
-                BinaryExpression GetBinaryExpr(string operation) => FilterParserConfiguration.GetExpressionFactory(operation)(convertExpression, constantExpression);
+                Expression GetBinaryExpr(string operation) => FilterParserConfiguration.GetExpressionFactory(operation)(memberExpression, constantExpression);
                 return new
                 {
                     Expression = GetBinaryExpr(filter.Operation),
@@ -47,7 +47,7 @@ namespace ParserSample.Expressions
             })
             .ToList();
 
-            BinaryExpression endingExpr = null;
+            Expression endingExpr = null;
             for (int i = 0; i < expressions.Count; i++)
             {
                 var expr = expressions[i];

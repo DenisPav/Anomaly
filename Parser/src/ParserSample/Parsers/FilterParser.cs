@@ -11,11 +11,12 @@ namespace ParserSample.Parsers
 {
     public class FilterParser<TEntity> : IFilterParser<TEntity>
     {
-        readonly FilterBuilder<TEntity> FilterBuilder;
+        FilterBuilder<TEntity> FilterBuilder;
 
         IEnumerable<string> Properties => FilterBuilder.FilterDefinition.PropertyDefinitions.Keys;
         IEnumerable<FilterOperationDefinition> Operations => FilterParserConfiguration.Operations;
         IEnumerable<FilterLogicalOperationDefinition> LogicalOperations => FilterParserConfiguration.LogicalOperations;
+        TextParser<char?> WhitespaceParser = Character.EqualTo(' ').Optional();
 
         TextParser<TextSpan> PropertyParser { get; set; }
         TextParser<TextSpan> OperationParser { get; set; }
@@ -39,9 +40,12 @@ namespace ParserSample.Parsers
             ValueParser = CreateValueParser();
         }
 
+        private TextParser<TextSpan> WrapWithOptionalWhitespace(TextParser<TextSpan> parser, string prop)
+            => parser.Or(Span.EqualTo(prop).Between(WhitespaceParser, WhitespaceParser));
+
         private TextParser<TextSpan> CreatePropertyParser()
         {
-            var propertyParsers = Properties.Select(prop => Span.EqualTo(prop))
+            var propertyParsers = Properties.Select(prop => WrapWithOptionalWhitespace(Span.EqualTo(prop), prop))
                             .ToList();
 
             return propertyParsers.Aggregate((TextParser<TextSpan>)null, (accumulator, propertyParser) =>
@@ -55,7 +59,7 @@ namespace ParserSample.Parsers
 
         private TextParser<TextSpan> CreateOperationParser()
         {
-            var operationParsers = Operations.Select(operation => Span.EqualTo(operation.String))
+            var operationParsers = Operations.Select(operation => WrapWithOptionalWhitespace(Span.EqualTo(operation.String), operation.String))
                             .ToList();
 
             return operationParsers.Aggregate((TextParser<TextSpan>)null, (accumulator, operationParser) =>
@@ -70,7 +74,7 @@ namespace ParserSample.Parsers
 
         private TextParser<TextSpan> CreateLogicalOperationParser()
         {
-            var logicalOperationParsers = LogicalOperations.Select(operation => Span.EqualTo(operation.String))
+            var logicalOperationParsers = LogicalOperations.Select(operation => WrapWithOptionalWhitespace(Span.EqualTo(operation.String), operation.String))
                             .ToList();
 
             var combinedLogicalOperationParsers = logicalOperationParsers.Aggregate((TextParser<TextSpan>)null, (accumulator, logicalOperationParser) =>
@@ -96,8 +100,7 @@ namespace ParserSample.Parsers
 
         public IEnumerable<FilterDefinition> Parse(string filterQuery)
         {
-            var sanitizedQuery = filterQuery.Replace(" ", "")
-                .Trim();
+            var sanitizedQuery = filterQuery.Trim();
             var splittedQuery = sanitizedQuery.Split(LogicalOperations.Select(operation => operation.String).ToArray(), StringSplitOptions.RemoveEmptyEntries);
 
             Type GetPropertyType(string property) => FilterBuilder.FilterDefinition.PropertyDefinitions[property].MemberType;

@@ -25,7 +25,7 @@ namespace ParserSample.Controllers
         [HttpGet]
         public IActionResult Get([FromQuery]FilterRequestModel model)
         {
-            //sample: Id = '11c43ee8-b9d3-4e51-b73f-bd9dda66e29c' AND Date > '2019-11-05' AND Title = 'Maggie' AND Count <= 133
+            //sample: Id = '11c43ee8-b9d3-4e51-b73f-bd9dda66e29c' AND Date > '2019-11-05' AND Title LIKE 'Maggie Cruz' AND Count <= 133
             var query = model.Filter;
 
             var filterDefinitions = FilterParser.Parse(query);
@@ -45,7 +45,7 @@ namespace ParserSample.Controllers
                     {
                         Id = Guid.Parse("11c43ee8-b9d3-4e51-b73f-bd9dda66e29c"),
                         Count = 133,
-                        Name = "Maggie",
+                        Name = "Maggie Cruz",
                         CreationDate = DateTime.Now
                     }
                 })
