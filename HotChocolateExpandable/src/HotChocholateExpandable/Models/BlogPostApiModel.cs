@@ -1,4 +1,6 @@
-﻿using HotChocolate.Types;
+﻿using HotChocholateExpandable.GraphQL;
+using HotChocholateExpandable.GraphQL.Middlewares;
+using HotChocolate.Types;
 using System;
 using System.Collections.Generic;
 
@@ -22,6 +24,11 @@ namespace HotChocholateExpandable.Models
         protected override void Configure(IObjectTypeDescriptor<BlogPostApiModel> descriptor)
         {
             descriptor.Name("blogPostApiModels");
+
+            descriptor.Field<RootQuery>(x => x.Comments(default))
+                .Use<FieldCollectingMiddleware>()
+                .Use<ExpandableFieldMiddleware<Comment>>()
+                .Name("commentsDifferentResolver");
         }
     }
 }

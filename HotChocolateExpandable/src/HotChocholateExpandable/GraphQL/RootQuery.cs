@@ -4,8 +4,8 @@ using HotChocholateExpandable.Models;
 using HotChocolate;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
-using HotChocolate.Types.Relay;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace HotChocholateExpandable.GraphQL
@@ -53,6 +53,11 @@ namespace HotChocholateExpandable.GraphQL
                     BlogPostTags = blog.BlogPostTags.Select(blogBlogPostTag => blogBlogPostTag.Tag)
                 });
         }
+
+        public IEnumerable<Comment> Comments([Service] DatabaseContext db)
+        {
+            return db.Set<Comment>();
+        }
     }
 
     public class RootQueryObject : ObjectType<RootQuery>
@@ -81,9 +86,10 @@ namespace HotChocholateExpandable.GraphQL
 
             descriptor.Field(x => x.BlogPostApiModels(default(IResolverContext), default(DatabaseContext)))
                 .Use<FieldCollectingMiddleware>()
-                .Use<ExpandableFieldMiddleware<BlogPostApiModel>>()
-                .UsePaging<BlogPostApiModelObjectType>()
-                .UseFiltering();
+                .Use<ExpandableFieldMiddleware<BlogPostApiModel>>();
+
+            descriptor.Field(x => x.Comments(default))
+                .Ignore();
         }
     }
 }
